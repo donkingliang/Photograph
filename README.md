@@ -1,0 +1,7 @@
+# Photograph
+android 调用相机拍照。适配到Android 10
+
+这个demo展示了android如何调用手机相机拍照并拿到拍出来的图片。demo兼容到android 10。
+在这个demo中，android 10和10以下是分别处理的，使用了不同的方式创建图片uri和加载图片。但其实android 10的创建uri和加载图片方式在android 10以下的手机也是可以使用的，所以只用android 10的方式也是可以兼容所有版本的手机的。
+
+如果想把图片放在手机的共享储存区，比如Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)文件夹下，需要申请文件读写权限，这点在demo中没有体现，因为demo中拍出来的图片是放在app的私有储存区的。
