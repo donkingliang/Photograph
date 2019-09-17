@@ -34,7 +34,9 @@ public class MainActivity extends AppCompatActivity {
     private ImageView ivCamera;
     private ImageView ivPhoto;
 
+    // 拍照的requestCode
     private static final int CAMERA_REQUEST_CODE = 0x00000010;
+    // 申请相机权限的requestCode
     private static final int PERMISSION_CAMERA_REQUEST_CODE = 0x00000012;
     /**
      * 用于保存拍照图片的uri
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private String mCameraImagePath;
 
     /**
-     *  适配Android 10
+     *  是否是Android 10以上手机
       */
     private boolean isAndroidQ = Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q;
 
@@ -69,12 +71,13 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 检查权限并拍照。
+     * 调用相机前先检查权限。
      */
     private void checkPermissionAndCamera() {
         int hasCameraPermission = ContextCompat.checkSelfPermission(getApplication(),
                 Manifest.permission.CAMERA);
         if (hasCameraPermission == PackageManager.PERMISSION_GRANTED) {
-            //有调起相机拍照。
+            //有权限，调起相机拍照。
             openCamera();
         } else {
             //没有权限，申请权限。
@@ -127,11 +130,13 @@ public class MainActivity extends AppCompatActivity {
      */
     private void openCamera() {
         Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // 判断是否有相机
         if (captureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = null;
             Uri photoUri = null;
 
             if (isAndroidQ) {
+                // 适配android 10
                 photoUri = createImageUri();
             } else {
                 try {
@@ -143,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                 if (photoFile != null) {
                     mCameraImagePath = photoFile.getAbsolutePath();
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        //通过FileProvider创建一个content类型的Uri
+                        //适配Android 7.0文件权限，通过FileProvider创建一个content类型的Uri
                         photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", photoFile);
                     } else {
                         photoUri = Uri.fromFile(photoFile);
@@ -166,15 +171,13 @@ public class MainActivity extends AppCompatActivity {
      * @return 图片的uri
      */
     private Uri createImageUri() {
-        final Uri[] imageFilePath = {null};
         String status = Environment.getExternalStorageState();
         // 判断是否有SD卡,优先使用SD卡存储,当没有SD卡时使用手机存储
         if (status.equals(Environment.MEDIA_MOUNTED)) {
-            imageFilePath[0] = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+           return getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
         } else {
-            imageFilePath[0] = getContentResolver().insert(MediaStore.Images.Media.INTERNAL_CONTENT_URI, new ContentValues());
+            return getContentResolver().insert(MediaStore.Images.Media.INTERNAL_CONTENT_URI, new ContentValues());
         }
-        return imageFilePath[0];
     }
 
     /**
